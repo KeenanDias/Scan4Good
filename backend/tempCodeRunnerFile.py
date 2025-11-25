@@ -8,8 +8,9 @@ import random
 import google.generativeai as genai
 
 app = Flask(__name__)
-# IMPORTANT
-GEMINI_API_KEY = "API_KEY HERE"
+
+# --- ⚠️ IMPORTANT: PASTE YOUR KEY HERE ---
+GEMINI_API_KEY = "AIzaSyAwUkVRg3EMlMA1g81e3UzgIP0dVw48tH0"
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Global variables
@@ -19,7 +20,9 @@ TARGET_COLUMN = 'risk_level'
 FEATURE_COLUMNS = ['age', 'weight', 'height', 'exercise', 'sleep', 
                    'sugar_intake', 'smoking', 'alcohol', 'married', 'profession', 'bmi']
 
-# DATA GENERATION 
+
+
+# --- 1. DATA GENERATION ---
 def generate_realistic_data(n_samples=500):
     print(f"⚡ Generating {n_samples} rows of realistic training data...")
     data = []
@@ -50,7 +53,7 @@ def generate_realistic_data(n_samples=500):
                                      'sugar_intake', 'smoking', 'alcohol', 'married', 'profession', 'bmi', 'risk_level'])
     return df
 
-#  TRAINING 
+# --- 2. TRAINING ---
 def train_model():
     global model, encoders, TARGET_COLUMN
     print("⏳ Training Model...")
@@ -96,38 +99,57 @@ def preprocess_input(data):
         if val not in le.classes_: val = 'unknown'
         df_input[col] = le.transform([val])
     return df_input
-
-# GEMINI HELPER GEMINI 2.0
-def get_gemini_advice(user_data, risk_level):
-    candidate_models = ["gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-flash-latest"]
+# # --- 3. GEMINI HELPER (EMERGENCY SIMULATION MODE) ---
+# def get_gemini_advice(user_data, risk_level):
+#     # CRITICAL: Hackathon Deadline Backup Plan
     
-    smoker_text = "smokes" if user_data.get('smoking') == 'yes' else "does not smoke"
+#     age = user_data.get('age')
+#     smoker = user_data.get('smoking')
+#     exercise = user_data.get('exercise')
+    
+#     if risk_level == "High":
+#         if smoker == "yes":
+#             return f"As a {age}-year-old smoker, your immediate priority is quitting to lower heart risks. Combine this with light daily walks to improve your lung capacity safely."
+#         elif exercise == "none":
+#              return f"At {age}, a sedentary lifestyle is your biggest risk factor. Start with just 10 minutes of walking a day to significantly lower your risk score."
+#         else:
+#             return f"Your BMI and age ({age}) indicate elevated risk. Please consult a specialist, as diet changes alone may not be enough."
+            
+#     elif risk_level == "Medium":
+#         if exercise == "none" or exercise == "low":
+#             return f"You are close to a healthy range, but your activity level is too low. Increasing exercise to 30 mins/day would likely drop you to Low Risk."
+#         else:
+#             return f"Maintain your current activity, but monitor your diet. Small adjustments to sugar intake could help lower your risk profile further."
+            
+#     else: # Low
+#         return f"Great job! Your profile for a {age}-year-old is excellent. Keep maintaining your {exercise} exercise routine to stay in this green zone."
+    
+#--- 3. GEMINI HELPER (ROBUST VERSION) ---
+def get_gemini_advice(user_data, risk_level):
+    # Try multiple model names in case one is deprecated or unavailable
+    candidate_models = ["gemini-1.5-flash", "gemini-pro", "gemini-1.0-pro"]
+    
     prompt = (
-        f"You are a compassionate health advisor. "
-        f"A user has this profile: Age {user_data.get('age')}, "
-        f"BMI {round(user_data.get('bmi', 0), 1)}, "
-        f"Activity: {user_data.get('exercise')}, "
-        f"Habit: {smoker_text}. "
-        f"Their Predicted Risk is {risk_level}. "
-        f"Give 2 short, specific sentences of advice for them. No markdown."
+        f"You are a health advisor. User Profile: "
+        f"Age {user_data.get('age')}, BMI {round(user_data.get('bmi', 0), 1)}, "
+        f"Smokes: {user_data.get('smoking')}. "
+        f"Predicted Risk: {risk_level}. "
+        f"Give 2 short, specific sentences of advice."
     )
 
     for model_name in candidate_models:
         try:
-            print(f"🤖 Asking {model_name}...")
+            print(f"🤖 Attempting to use model: {model_name}...")
             model = genai.GenerativeModel(model_name)
             response = model.generate_content(prompt)
-            
-            clean_text = response.text.replace('*', '').strip()
-            return clean_text
-            
+            return response.text
         except Exception as e:
-            print(f"⚠️ {model_name} failed: {e}")
-            continue 
+            print(f"⚠️ Failed with {model_name}: {e}")
+            continue # Try the next model in the list
             
-    return "Focus on a balanced diet and regular exercise. (AI Service Busy)"
+    return "Focus on balanced diet and exercise. (AI Connection Failed)"
 
-# API ENDPOINT 
+# --- 4. API ENDPOINT ---
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None: return jsonify({"risk_level": "Medium"})
@@ -136,10 +158,12 @@ def predict():
         data = request.json
         print(f"📥 Received: {data}")
         
+        # A. Predict Risk
         X_new = preprocess_input(data)
         prediction = model.predict(X_new)[0]
         print(f"🔮 Prediction: {prediction}")
 
+        # B. Get Gemini Advice
         print("🤖 Calling Gemini for advice...")
         
         w = float(data.get('weight', 70))

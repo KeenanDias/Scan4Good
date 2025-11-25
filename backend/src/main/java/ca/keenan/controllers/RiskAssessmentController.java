@@ -32,25 +32,23 @@ public class RiskAssessmentController {
 
     @PostMapping("/assess")
     public ResponseEntity<FullAssessment> assessRisk(@RequestBody UserHealthData healthData) {
-        
-        // 1. Send data to Python ML Service
-        // Ensure your Python app is running on port 5000
+
+        // Send data to Python ML Service
         String pythonServiceUrl = "http://localhost:5000/predict";
-        
+
         RiskResponse aiResponse;
         try {
             aiResponse = restTemplate.postForObject(pythonServiceUrl, healthData, RiskResponse.class);
         } catch (Exception e) {
-            // Fallback if Python is down (Good for Hackathon stability)
             aiResponse = new RiskResponse();
-            aiResponse.setRiskLevel("Medium"); 
+            aiResponse.setRiskLevel("Medium");
             System.err.println("AI Service Error: " + e.getMessage());
         }
 
-        // 2. Fetch relevant tips from MySQL
+        // Fetch relevant tips from MySQL
         List<HealthTip> tips = tipRepository.findByRiskLevel(aiResponse.getRiskLevel());
 
-        // 3. Combine and return
+        // Combine and return
         FullAssessment response = new FullAssessment(aiResponse.getRiskLevel(), tips);
         return ResponseEntity.ok(response);
     }
