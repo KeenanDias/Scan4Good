@@ -1,0 +1,134 @@
+<div class="container">
+  <header class="header">
+    <h1>Scan4Good</h1>
+    <p>AI-Powered Health Risk Profiler</p>
+  </header>
+
+  <div class="content-grid">
+    <div class="card form-card">
+      <h2>Your Lifestyle Profile</h2>
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" [(ngModel)]="formData.age" name="age" required placeholder="35" />
+          </div>
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <input
+              type="number"
+              [(ngModel)]="formData.weight"
+              name="weight"
+              required
+              placeholder="70"
+            />
+          </div>
+          <div class="form-group">
+            <label>Height (cm)</label>
+            <input
+              type="number"
+              [(ngModel)]="formData.height"
+              name="height"
+              required
+              placeholder="175"
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Sleep (Hours/Night)</label>
+          <input type="number" [(ngModel)]="formData.sleep" name="sleep" required placeholder="7" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Exercise Level</label>
+            <select [(ngModel)]="formData.exercise" name="exercise" required>
+              <option value="none">None</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sugar Intake</label>
+            <select [(ngModel)]="formData.sugarIntake" name="sugarIntake" required>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Smoking?</label>
+            <select [(ngModel)]="formData.smoking" name="smoking">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Alcohol?</label>
+            <select [(ngModel)]="formData.alcohol" name="alcohol">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Married?</label>
+            <select [(ngModel)]="formData.married" name="married">
+              <option value="no">No</option>
+              <option value="yes">Yes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Profession</label>
+          <select [(ngModel)]="formData.profession" name="profession">
+            <option value="student">Student</option>
+            <option value="office_worker">Office Worker</option>
+            <option value="teacher">Teacher</option>
+            <option value="doctor">Doctor</option>
+            <option value="engineer">Engineer</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <button type="submit" [disabled]="isLoading" class="btn-submit">
+          {{ isLoading ? 'Processing AI Model...' : 'Analyze Risk' }}
+        </button>
+      </form>
+    </div>
+
+    <div class="card result-card" *ngIf="result">
+      <div class="risk-header" [style.background-color]="getRiskColor(result.riskLevel)">
+        <h3>Predicted Risk</h3>
+        <div class="risk-value">{{ result.riskLevel }}</div>
+      </div>
+
+      <div
+        class="gemini-box"
+        style="
+          background: #f0fdf4;
+          padding: 15px;
+          border-left: 5px solid #10b981;
+          margin: 20px 0;
+          border-radius: 4px;
+        "
+      >
+        <h4 style="margin-top: 0; color: #065f46">🤖 AI Personalized Insight</h4>
+        <p style="font-style: italic; font-size: 1.1rem; color: #1f2937">"{{ result.aiAdvice }}"</p>
+      </div>
+
+      <div class="tips-container">
+        <h4>Recommended Resources</h4>
+        <div *ngFor="let tip of result.tips" class="tip-item">
+          <p>{{ tip.adviceText }}</p>
+          <a [href]="tip.resourceLink" target="_blank">View Resource &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
