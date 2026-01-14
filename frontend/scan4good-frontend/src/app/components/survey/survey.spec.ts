@@ -1,20 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing'; 
+import { SurveyComponent } from './survey'; 
 
-import { Survey } from './survey';
-
-describe('Survey', () => {
-  let component: Survey;
-  let fixture: ComponentFixture<Survey>;
+describe('SurveyComponent', () => {
+  let component: SurveyComponent;
+  let fixture: ComponentFixture<SurveyComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Survey]
+      imports: [
+        SurveyComponent,         
+        HttpClientTestingModule  
+      ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Survey);
+    fixture = TestBed.createComponent(SurveyComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {
