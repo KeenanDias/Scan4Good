@@ -8,6 +8,21 @@ node_modules/
 dist/
 .build/
 
+# Java / Spring Boot (ADD THIS SECTION)
+target/
+*.jar
+*.class
+.mvn/
+mvnw
+mvnw.cmd
+.classpath
+.project
+.settings/
+
+# IDEs (Recommended)
+.idea/
+.vscode/
+
 # OS files
 .DS_Store
 Thumbs.db
