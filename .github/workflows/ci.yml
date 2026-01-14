@@ -50,7 +50,7 @@ jobs:
       run: npm ci
 
     - name: Run Tests
-      run: npm run test -- --run
+      run: npm run test -- --watch=false --browsers=ChromeHeadless
 
     - name: Build Frontend
       run: npm run build
